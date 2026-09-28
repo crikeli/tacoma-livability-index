@@ -1,0 +1,20 @@
+name: tacoma-livability-index
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - jupyterlab
+  - pandas
+  - geopandas
+  - numpy
+  - shapely
+  - matplotlib
+  - requests
+  - pyarrow
+  - scikit-learn
+  - osmnx
+  - pystac-client
+  - planetary-computer
+  - pip
+  - pip:
+      - gtfs-kit

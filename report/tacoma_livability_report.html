@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tacoma Livability Report</title>
+<style>
+  @page { size: letter; margin: 0.6in 0.7in; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: #1a1a1a;
+    font-size: 10.5pt;
+    line-height: 1.45;
+    margin: 0;
+  }
+  h1 { font-size: 20pt; font-weight: 700; margin: 0 0 4px; }
+  .subtitle { color: #444; font-size: 11pt; margin: 0 0 16px; }
+  h2 { font-size: 13.5pt; font-weight: 700; margin: 22px 0 6px; color: #1a3d6d; border-bottom: 2px solid #1a3d6d; padding-bottom: 3px; break-after: avoid; }
+  h3 { font-size: 11.5pt; font-weight: 700; margin: 14px 0 4px; break-after: avoid; }
+  p { margin: 0 0 10px; }
+  .meta-box { background: #f4f6f8; border: 1px solid #dde3e8; border-radius: 6px; padding: 10px 14px; font-size: 9.5pt; margin: 10px 0 18px; }
+  .meta-box b { color: #1a3d6d; }
+  figure { margin: 14px 0; text-align: center; break-inside: avoid; }
+  figure img { max-width: 100%; border: 1px solid #e0e0e0; border-radius: 4px; }
+  figcaption { font-size: 9pt; color: #555; margin-top: 6px; text-align: left; }
+  .finding, .limitation { break-inside: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 9.5pt; break-inside: avoid; }
+  th, td { border-bottom: 1px solid #ddd; padding: 5px 8px; text-align: left; }
+  th { background: #f4f6f8; font-weight: 700; }
+  .limitation { border-left: 3px solid #c2410c; background: #fdf3ee; padding: 8px 12px; margin: 8px 0; font-size: 9.8pt; }
+  .finding { border-left: 3px solid #1a6d3d; background: #eff8f2; padding: 8px 12px; margin: 8px 0; font-size: 9.8pt; }
+  a { color: #1a6fb8; }
+  .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>Livability of Tacoma's Residential Parcels</h1>
+<p class="subtitle">A real-data access, safety, and environmental-quality index for every real residential parcel in the City of Tacoma, WA</p>
+
+<div class="meta-box">
+<b>65,229 real residential parcels</b> - single-family homes, duplexes, triplexes, fourplexes, and apartment/condo buildings - scored on how good their surrounding area is to live in, using only real, publicly-sourced data. No modeled or illustrative values anywhere in this report. Scores run 35.4 to 121.9; <b>100 is the citywide average</b>. See Methodology for how the six themes are built and combined, and Limitations for every real gap or adaptation this required.
+</div>
+
+<h2>Why this scope</h2>
+<p>Tacoma's housing stock is overwhelmingly single-family: of the 65,229 real parcels the Pierce County Assessor classifies as residential within city limits, 55,027 (84%) are single-family dwellings. Restricting an index to apartments and condos alone - a reasonable choice in a denser, more apartment-centric city - would describe a small and unrepresentative slice of how Tacoma actually lives. This report instead scores every real residential parcel type: single-family, duplex/triplex/fourplex, and apartment/condo. Mobile homes sit on Pierce County's own separate parcel layer and are not covered here.</p>
+
+<h2>Methodology</h2>
+<p>Each parcel is scored on six themes, each built from real public data and combined so that a parcel has to do reasonably well across the board - excelling on two themes cannot fully offset being poor on four. Concretely: each theme is reduced to a single z-score (direction-corrected so higher always means better), and the total combines the average of the six theme z-scores with their minimum (70/30 weighting), then is rescaled so the citywide mean is exactly 100.</p>
+
+<table>
+<tr><th>Theme</th><th>What it measures</th><th>Data source</th></tr>
+<tr><td>Shops, schools, healthcare</td><td>Real walking-network distance (not straight-line) to the nearest supermarket, school, preschool, pharmacy, healthcare facility, library, and sports facility</td><td>OpenStreetMap</td></tr>
+<tr><td>Public transport</td><td>Walking-network distance to the nearest bus stop and, separately, to the nearest rail stop (Tacoma Link light rail or Sounder commuter rail)</td><td>Pierce Transit GTFS + Sound Transit GTFS</td></tr>
+<tr><td>Green space and water</td><td>Walking-network distance to the nearest park of at least 1 hectare (the WHO Europe threshold) and to the nearest open water</td><td>Metro Parks Tacoma + OpenStreetMap</td></tr>
+<tr><td>Street connectivity</td><td>Real intersection density (junctions per km&sup2;) in the walkable network around each parcel - a dense grid supports short trips; cul-de-sacs don't</td><td>OpenStreetMap road network</td></tr>
+<tr><td>Environment</td><td>Local air-pollution burden percentile (fine particulates, ozone, diesel particulate matter, NO<sub>2</sub>, traffic proximity) for the parcel's census tract</td><td>EPA EJSCREEN (archived - see Limitations)</td></tr>
+<tr><td>Reported crime</td><td>Density of reported Person and Property crime incidents within roughly a five-minute walk, over the last three years</td><td>City of Tacoma Police Department</td></tr>
+</table>
+
+<figure>
+<img src="figures/map.png" alt="Map of Tacoma residential livability scores">
+<figcaption><b>Every scored parcel, mapped at its real footprint - all 65,229 of them.</b> Blue is above the citywide average, red is below. The full residential street grid is visible directly: the strongest above-average area is the North End peninsula; the clearest below-average concentration sits in a band running from central Tacoma toward the Tideflats industrial waterfront, and across much of the North East peninsula.</figcaption>
+</figure>
+
+<h2>What drives the score</h2>
+<p>Splitting the total into its six components shows which real factors actually move the ranking, and which don't - a theme can correlate strongly with the total and still barely matter if it has little real variation across the city (and vice versa).</p>
+
+<figure>
+<img src="figures/theme_drivers.png" alt="Bar charts showing theme correlation with total score and spread">
+<figcaption><b>Left: how much each theme relates to the total score.</b> Reported crime is the strongest single driver (r = 0.45), followed by shops/schools/healthcare access (r = 0.38), environment (r = 0.33), and green space and water (r = 0.31). Street connectivity barely matters (r = 0.07) at citywide scale. <b>Right: how much each theme actually varies</b> across the 65,229 parcels. Environment, reported crime, and street connectivity vary the most - each is built from a single real metric, while the access themes average several real sub-metrics together, which narrows their spread (a real statistical property, not a flaw in the data).</figcaption>
+</figure>
+
+<div class="finding">
+<b>A real, sizable shift from what a narrower apartment-only analysis would show:</b> restricting this same method to only Tacoma's apartment and multifamily parcels (10,082 of the 65,229 scored here) produces a very different ranking of what matters - amenity access and green space dominate, while reported crime and environment barely register. Across the <i>full</i> residential population, that reverses: reported crime becomes the single strongest driver of the total score, and environment - previously almost irrelevant - becomes a real, meaningful factor. Apartments cluster in Tacoma's already-walkable urban core, where amenity access varies widely but crime and pollution vary comparatively little within that specific footprint. Once single-family neighborhoods across the whole city are included, the picture inverts: nearly everywhere has adequate street connectivity on Tacoma's historic grid, but safety and air quality vary sharply block to block - and those are what end up separating a strong neighborhood from a struggling one.
+</div>
+
+<h2>Six independent measures of the same parcels</h2>
+<figure>
+<img src="figures/small_multiples.png" alt="Six-panel small multiples map, one per theme">
+<figcaption>Six panels of the same 65,229 parcels, one per theme, all on the same color scale. Environment shows a clear geographic gradient - better along the Puget Sound-facing north and west, worse moving inland and south toward and past the Tideflats. Reported crime shows a closely related but not identical pattern, worse in a band through central Tacoma. Street connectivity is comparatively flat citywide - Tacoma's historic grid extends through most of its residential area, so this theme separates few neighborhoods from each other, consistent with its weak correlation above.</figcaption>
+</figure>
+
+<h2>Every real neighborhood, ranked</h2>
+<p>Tacoma's eight official Neighborhood Council Districts, ranked by mean score across every real residential parcel each contains.</p>
+<figure>
+<img src="figures/neighborhood_ranking.png" alt="Bar chart ranking all 8 Tacoma neighborhood council districts">
+<figcaption>North End leads (110.2, n=9,992) and West End follows closely (105.0, n=10,136) - both largely on the Puget Sound-facing side of the peninsula. New Tacoma trails by a wide margin (80.8, n=2,909) - its real mean crime density (1,972 incidents/km&sup2;) runs over four times the citywide average (471/km&sup2;), and its real mean pollution-burden percentile (64.2) sits meaningfully above the citywide average (57.0), consistent with its central, industrial-adjacent location. North East - the city's other below-average district - is visibly the most crime- and pollution-affected area in the small-multiples map above.</figcaption>
+</figure>
+
+<div class="page-break"></div>
+<h2>Limitations</h2>
+
+<div class="limitation"><b>Reported crime, not perceived safety.</b> No neighborhood-level resident safety-perception survey was found for Tacoma or Pierce County (checked directly - the Washington Association of Sheriffs and Police Chiefs publishes only county-level annual crime totals). This report uses real point-level reported-crime incidents from the Tacoma Police Department instead - a related but genuinely different signal. Reported crime reflects what happened and was recorded; perceived safety reflects how residents feel, which can diverge from it in either direction.</div>
+
+<div class="limitation"><b>Environment data is a real but discontinued federal snapshot.</b> EPA's EJSCREEN tool - the standard source for neighborhood-level pollution-burden data - was officially discontinued in February 2025. This report uses the last real, EPA-produced EJSCREEN 2024 tract-level dataset, preserved in a Harvard Dataverse public archive under a CC0 license, rather than a live feed. The environment theme therefore reflects conditions as of that release, not real-time monitoring.</div>
+
+<div class="limitation"><b>Crime locations are geo-masked.</b> The City of Tacoma's own published crime data documentation states that incident locations are shifted to the nearest 100-block for privacy - a real precision limit in the source data that this report inherits rather than can correct for.</div>
+
+<div class="limitation"><b>Environment is scored at the census-tract level, not per-parcel.</b> Every residence in a tract shares one pollution-burden value. A parcel at the edge of a relatively clean tract, close to a more polluted neighboring tract, reads the same as one at the tract's center - a real resolution trade-off, not an error.</div>
+
+<div class="limitation"><b>OSM point-of-interest coverage is real but uneven.</b> Only 11 preschools were found citywide via OpenStreetMap's <code>kindergarten</code> tag - almost certainly an undercount of Tacoma's real licensed childcare facilities, since small home-based and church-based providers are inconsistently mapped in OSM. Supermarket, school, and healthcare coverage is denser and more reliable. This unevenness is inherited directly into the "shops, schools, healthcare" theme.</div>
+
+<h2>Data sources</h2>
+<table>
+<tr><th>Data</th><th>Source</th></tr>
+<tr><td>Residential parcels (all types)</td><td>Pierce County Assessor-Treasurer, live ArcGIS FeatureServer</td></tr>
+<tr><td>Street network, POIs, water</td><td>OpenStreetMap, via osmnx</td></tr>
+<tr><td>Bus stops</td><td>Pierce Transit, real-time GTFS feed</td></tr>
+<tr><td>Rail stops (Tacoma Link, Sounder)</td><td>Sound Transit, real-time GTFS feed</td></tr>
+<tr><td>Parks</td><td>Metro Parks Tacoma, live ArcGIS FeatureServer</td></tr>
+<tr><td>Reported crime</td><td>City of Tacoma Police Department, live ArcGIS FeatureServer</td></tr>
+<tr><td>Environmental burden</td><td>EPA EJSCREEN 2024 (archived, Harvard Dataverse, CC0)</td></tr>
+<tr><td>Census tract boundaries</td><td>US Census Bureau, via Microsoft Planetary Computer</td></tr>
+<tr><td>Neighborhood districts</td><td>City of Tacoma, official Neighborhood Council District boundaries</td></tr>
+</table>
+
+<p style="margin-top:20px;color:#777;font-size:8.5pt;">Prepared by Kelin Christi, using real, independently-verified Tacoma and Pierce County public data.</p>
+
+</body>
+</html>

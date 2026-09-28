@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tacoma Livability Index</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --bg: #ffffff; --ink: #1a1a1a; --muted: #5b5f66; --border: #e2e4e8;
+    --surface: #f6f7f9; --accent: #2a78d6; --good: #2c7bb6; --bad: #d7191c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1117; --ink: #e6e8eb; --muted: #9aa1ab; --border: #2a2e35;
+      --surface: #161a21; --accent: #4f9bf0; --good: #6fb3e0; --bad: #e8746b;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: flex; flex-direction: column; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  header { padding: 16px clamp(16px, 4vw, 32px) 0; }
+  h1 { margin: 0 0 4px; font-size: 1.4rem; }
+  .caption { color: var(--muted); margin: 0 0 12px; font-size: 0.9rem; }
+  .tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--border); padding: 0 clamp(16px, 4vw, 32px); }
+  .tab-btn { background: none; border: none; padding: 10px 0; font-size: 15px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+  #tab-overview, #tab-notebook, #tab-data { display: none; overflow-y: auto; }
+  #tab-overview.active, #tab-notebook.active, #tab-data.active { display: block; }
+  #tab-overview { padding: 20px clamp(16px, 4vw, 32px) 64px; }
+  #tab-overview .wrap { max-width: 860px; margin: 0 auto; }
+
+  #tab-map { flex: 1 1 auto; min-height: 0; display: none; position: relative; }
+  #tab-map.active { display: block; }
+  #map { height: 100%; width: 100%; background: var(--surface); }
+
+  #tab-notebook { flex: 1 1 auto; min-height: 0; padding: 0; }
+  #tab-notebook.active { display: flex; flex-direction: column; }
+  .notebook-bar { padding: 8px clamp(16px, 4vw, 32px); font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .notebook-bar a { color: var(--accent); }
+  #notebook-frame { border: none; flex: 1 1 auto; width: 100%; background: #fff; }
+
+  #tab-data { padding: 24px clamp(16px, 4vw, 32px) 64px; }
+  #tab-data .wrap { max-width: 720px; margin: 0 auto; }
+
+  h2 { font-size: 1.15rem; margin: 32px 0 10px; }
+  h2:first-child { margin-top: 0; }
+  p { line-height: 1.6; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.92rem; }
+  th, td { border-bottom: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+  th { background: var(--surface); }
+  figure { margin: 18px 0; text-align: center; }
+  figure img { max-width: 100%; border: 1px solid var(--border); border-radius: 6px; }
+  figcaption { font-size: 0.85rem; color: var(--muted); margin-top: 6px; text-align: left; }
+  .meta-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-size: 0.92rem; margin: 12px 0 20px; }
+  .finding { border-left: 3px solid var(--good); background: var(--surface); padding: 10px 14px; margin: 12px 0; font-size: 0.92rem; }
+  .limitation { border-left: 3px solid var(--bad); background: var(--surface); padding: 10px 14px; margin: 10px 0; font-size: 0.92rem; }
+  a { color: var(--accent); }
+  code { background: var(--surface); padding: 1px 5px; border-radius: 4px; font-size: 0.9em; }
+
+  .controls {
+    position: absolute; top: 12px; right: 12px; z-index: 1000; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px;
+    max-width: 260px; max-height: calc(100% - 24px); overflow-y: auto;
+  }
+  .controls label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .controls select { width: 100%; font-size: 13px; padding: 5px; margin-bottom: 10px; }
+  .legend-swatch { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 3px 0; }
+  .legend-swatch span.chip { width: 16px; height: 16px; border-radius: 3px; flex: none; border: 1px solid var(--border); }
+  hr.sep { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+  .download-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin: 12px 0; background: var(--surface); }
+  .download-card h3 { margin: 0 0 4px; font-size: 1rem; }
+  .download-card p { margin: 0 0 8px; font-size: 0.9rem; color: var(--muted); }
+  .download-card a.btn { display: inline-block; background: var(--accent); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; text-decoration: none; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Tacoma Livability Index</h1>
+    <p class="caption">A real-data access, safety, and environmental-quality index for all 65,229 real residential parcels in the City of Tacoma, WA.</p>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="overview">Overview</button>
+      <button class="tab-btn" data-tab="map">Map</button>
+      <button class="tab-btn" data-tab="notebook">Notebook</button>
+      <button class="tab-btn" data-tab="data">Data</button>
+    </div>
+  </header>
+
+  <div id="tab-overview" class="active">
+    <div class="wrap">
+
+      <div class="meta-box">
+        <b>65,229 real residential parcels</b> &mdash; single-family homes, duplexes, triplexes, fourplexes, and apartment/condo buildings &mdash; scored on how good their surrounding area is to live in, using only real, publicly-sourced data. No modeled or illustrative values anywhere in this report. Scores run 35.4 to 121.9; <b>100 is the citywide average</b>.
+      </div>
+
+      <h2>Why this scope</h2>
+      <p>Tacoma's housing stock is overwhelmingly single-family: of the 65,229 real parcels the Pierce County Assessor classifies as residential within city limits, 55,027 (84%) are single-family dwellings. Restricting an index to apartments and condos alone &mdash; a reasonable choice in a denser, more apartment-centric city &mdash; would describe a small and unrepresentative slice of how Tacoma actually lives. This index instead scores every real residential parcel type: single-family, duplex/triplex/fourplex, and apartment/condo. Mobile homes sit on Pierce County's own separate parcel layer and are not covered here.</p>
+
+      <h2>Method</h2>
+      <p>Each parcel is scored on six themes, each built from real public data and combined so that a parcel has to do reasonably well across the board &mdash; excelling on two themes cannot fully offset being poor on four. Concretely: each theme is reduced to a single z-score (direction-corrected so higher always means better), and the total combines the average of the six theme z-scores with their minimum (70/30 weighting), then is rescaled so the citywide mean is exactly 100.</p>
+
+      <table>
+        <tr><th>Theme</th><th>What it measures</th><th>Data source</th></tr>
+        <tr><td>Shops, schools, healthcare</td><td>Real walking-network distance to the nearest supermarket, school, preschool, pharmacy, healthcare facility, library, and sports facility</td><td>OpenStreetMap</td></tr>
+        <tr><td>Public transport</td><td>Walking-network distance to the nearest bus stop and, separately, to the nearest rail stop (Tacoma Link light rail or Sounder commuter rail)</td><td>Pierce Transit + Sound Transit GTFS</td></tr>
+        <tr><td>Green space and water</td><td>Walking-network distance to the nearest park of at least 1 hectare and to the nearest open water</td><td>Metro Parks Tacoma + OpenStreetMap</td></tr>
+        <tr><td>Street connectivity</td><td>Real intersection density (junctions per km&sup2;) in the walkable network around each parcel</td><td>OpenStreetMap road network</td></tr>
+        <tr><td>Environment</td><td>Local air-pollution burden percentile (PM2.5, ozone, diesel PM, NO<sub>2</sub>, traffic proximity) for the parcel's census tract</td><td>EPA EJSCREEN (archived)</td></tr>
+        <tr><td>Reported crime</td><td>Density of reported Person and Property crime incidents within roughly a five-minute walk, last 3 years</td><td>City of Tacoma Police Department</td></tr>
+      </table>
+
+      <figure>
+        <img src="assets/figures/map.png" alt="Map of Tacoma residential livability scores">
+        <figcaption><b>Every scored parcel, mapped at its real footprint &mdash; all 65,229 of them.</b> Blue is above the citywide average, red is below. The strongest above-average area is the North End peninsula; the clearest below-average concentration runs from central Tacoma toward the Tideflats industrial waterfront, and across much of the North East peninsula. (The Map tab lets you explore this interactively and switch between all seven views.)</figcaption>
+      </figure>
+
+      <h2>What drives the score</h2>
+      <p>Splitting the total into its six components shows which real factors actually move the ranking, and which don't.</p>
+      <figure>
+        <img src="assets/figures/theme_drivers.png" alt="Bar charts showing theme correlation with total score and spread">
+        <figcaption><b>Left: how much each theme relates to the total score.</b> Reported crime is the strongest single driver (r&nbsp;=&nbsp;0.45), followed by shops/schools/healthcare access (r&nbsp;=&nbsp;0.38), environment (r&nbsp;=&nbsp;0.33), and green space and water (r&nbsp;=&nbsp;0.31). Street connectivity barely matters (r&nbsp;=&nbsp;0.065) at citywide scale. <b>Right: how much each theme actually varies</b> across the 65,229 parcels.</figcaption>
+      </figure>
+
+      <div class="finding">
+        <b>A real, sizable shift from what a narrower apartment-only analysis would show:</b> restricting this same method to only Tacoma's apartment and multifamily parcels (10,082 of the 65,229 scored here) produces a very different picture &mdash; amenity access and green space dominate, while reported crime and environment barely register. Across the <i>full</i> residential population, that reverses: reported crime becomes the single strongest driver, and environment &mdash; previously almost irrelevant &mdash; becomes a real, meaningful factor.
+      </div>
+
+      <h2>Six independent measures of the same parcels</h2>
+      <figure>
+        <img src="assets/figures/small_multiples.png" alt="Six-panel small multiples map, one per theme">
+        <figcaption>Six panels of the same 65,229 parcels, one per theme, all on the same color scale. Environment shows a clear geographic gradient &mdash; better along the Puget Sound-facing north and west, worse moving inland and south toward and past the Tideflats. Street connectivity is comparatively flat citywide, consistent with its weak correlation above.</figcaption>
+      </figure>
+
+      <h2>Every real neighborhood, ranked</h2>
+      <p>Tacoma's eight official Neighborhood Council Districts, ranked by mean score across every real residential parcel each contains.</p>
+      <figure>
+        <img src="assets/figures/neighborhood_ranking.png" alt="Bar chart ranking all 8 Tacoma neighborhood council districts">
+        <figcaption>North End leads (110.2, n=9,992) and West End follows closely (105.0, n=10,136). New Tacoma trails by a wide margin (80.8, n=2,909) &mdash; its real mean crime density (1,972 incidents/km&sup2;) runs over four times the citywide average (471/km&sup2;), and its real mean pollution-burden percentile (64.2) sits meaningfully above the citywide average (57.0).</figcaption>
+      </figure>
+
+      <h2>Limitations</h2>
+      <div class="limitation"><b>Reported crime, not perceived safety.</b> No neighborhood-level resident safety-perception survey was found for Tacoma or Pierce County. This uses real point-level reported-crime incidents from the Tacoma Police Department instead &mdash; a related but genuinely different signal.</div>
+      <div class="limitation"><b>Environment data is a real but discontinued federal snapshot.</b> EPA's EJSCREEN was officially discontinued in February 2025. This uses the last real, EPA-produced EJSCREEN 2024 tract-level dataset, preserved in a Harvard Dataverse public archive under a CC0 license.</div>
+      <div class="limitation"><b>Crime locations are geo-masked.</b> The City of Tacoma shifts incident locations to the nearest 100-block for privacy &mdash; a real precision limit inherited here.</div>
+      <div class="limitation"><b>Environment is scored at the census-tract level, not per-parcel.</b> Every residence in a tract shares one pollution-burden value.</div>
+      <div class="limitation"><b>OSM point-of-interest coverage is real but uneven.</b> Only 11 preschools were found citywide via OpenStreetMap's <code>kindergarten</code> tag &mdash; almost certainly an undercount, since small home-based and church-based providers are inconsistently mapped in OSM.</div>
+
+      <h2>Data sources</h2>
+      <table>
+        <tr><th>Data</th><th>Source</th></tr>
+        <tr><td>Residential parcels (all types)</td><td>Pierce County Assessor-Treasurer, live ArcGIS FeatureServer</td></tr>
+        <tr><td>Street network, POIs, water</td><td>OpenStreetMap, via osmnx</td></tr>
+        <tr><td>Bus &amp; rail stops</td><td>Pierce Transit + Sound Transit, real-time GTFS feeds</td></tr>
+        <tr><td>Parks</td><td>Metro Parks Tacoma, live ArcGIS FeatureServer</td></tr>
+        <tr><td>Reported crime</td><td>City of Tacoma Police Department, live ArcGIS FeatureServer</td></tr>
+        <tr><td>Environmental burden</td><td>EPA EJSCREEN 2024 (archived, Harvard Dataverse, CC0)</td></tr>
+        <tr><td>Census tract boundaries</td><td>US Census Bureau, via Microsoft Planetary Computer</td></tr>
+        <tr><td>Neighborhood districts</td><td>City of Tacoma, official Neighborhood Council District boundaries</td></tr>
+      </table>
+
+      <p style="margin-top:24px;color:var(--muted);font-size:0.85rem;">
+        Prepared by Kelin Christi, using real, independently-verified Tacoma and Pierce County public data.
+        Read the <a href="report/tacoma_livability_report.html" target="_blank" rel="noopener">full standalone report</a>,
+        walk through the <a href="#" onclick="document.querySelector('[data-tab=notebook]').click(); return false;">methodology notebook</a>,
+        or browse the <a href="https://github.com/crikeli/tacoma-livability-index" target="_blank" rel="noopener">source code</a>.
+      </p>
+    </div>
+  </div>
+
+  <div id="tab-map">
+    <div id="map"></div>
+    <div class="controls">
+      <label for="theme-select">Theme</label>
+      <select id="theme-select">
+        <option value="livability_score">Total Livability Score</option>
+        <option value="theme_shops_schools_healthcare">Shops, Schools, Healthcare</option>
+        <option value="theme_public_transport">Public Transport</option>
+        <option value="theme_green_space_water">Green Space and Water</option>
+        <option value="theme_street_connectivity">Street Connectivity</option>
+        <option value="theme_environment">Environment</option>
+        <option value="theme_reported_crime">Reported Crime (inverse)</option>
+      </select>
+      <hr class="sep">
+      <div id="legend"></div>
+      <hr class="sep">
+      <div style="font-size:11px;color:var(--muted)">65,229 real parcels, vector tiles. Red = below average, blue = above. Switching themes re-colors instantly without reloading data.</div>
+    </div>
+  </div>
+
+  <div id="tab-notebook">
+    <div class="notebook-bar">
+      Step-by-step scoring methodology, run against real already-fetched Tacoma data &mdash;
+      <a href="https://github.com/crikeli/tacoma-livability-index/blob/main/notebooks/tacoma_livability_methodology.ipynb" target="_blank" rel="noopener">view the source notebook on GitHub</a>.
+    </div>
+    <iframe id="notebook-frame" src="notebook.html" title="Methodology notebook"></iframe>
+  </div>
+
+  <div id="tab-data">
+    <div class="wrap">
+      <h2>Download the real data</h2>
+      <p>Every file below is generated directly by the pipeline in <a href="https://github.com/crikeli/tacoma-livability-index" target="_blank" rel="noopener">this repository</a> &mdash; nothing here is illustrative.</p>
+
+      <div class="download-card">
+        <h3>Full-resolution styled GeoPackage</h3>
+        <p>All 65,229 scored parcels with real geometry, plus all 7 saved QGIS styles embedded &mdash; opens directly in QGIS with the Total Livability Score view active by default and all 6 theme views available from the Styles dropdown. ~31&nbsp;MB.</p>
+        <a class="btn" href="data/tacoma_livability_styled.gpkg">Download .gpkg</a>
+      </div>
+
+      <div class="download-card">
+        <h3>Vector tile archive (PMTiles)</h3>
+        <p>The same data powering the interactive map above, as a single static tile archive. Usable in QGIS (via the PMTiles plugin), MapLibre, or any tippecanoe-family tool. ~18&nbsp;MB.</p>
+        <a class="btn" href="data/tacoma_livability.pmtiles">Download .pmtiles</a>
+      </div>
+
+      <div class="download-card">
+        <h3>Quintile break values</h3>
+        <p>The exact numeric breakpoints behind every color ramp on this site and in the QGIS styles, for all 7 scored fields.</p>
+        <a class="btn" href="data/quintile_breaks.json">Download .json</a>
+      </div>
+
+      <div class="download-card">
+        <h3>Neighborhood ranking</h3>
+        <p>Mean score and parcel count for each of Tacoma's 8 official Neighborhood Council Districts.</p>
+        <a class="btn" href="data/neighborhood_ranking.csv">Download .csv</a>
+      </div>
+
+      <div class="download-card">
+        <h3>Full pipeline source</h3>
+        <p>Every fetch/scoring/styling script, run in documented order, plus the methodology notebook.</p>
+        <a class="btn" href="https://github.com/crikeli/tacoma-livability-index" target="_blank" rel="noopener">View on GitHub</a>
+      </div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/protomaps-leaflet@5.1.0/dist/protomaps-leaflet.js"></script>
+<script>
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll("#tab-overview, #tab-map, #tab-notebook, #tab-data").forEach(function (p) { p.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+      if (btn.dataset.tab === "map" && window.tacomaMap) { setTimeout(function () { window.tacomaMap.invalidateSize(); }, 50); }
+    });
+  });
+
+  const RAMP = ["#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#2c7bb6"]; // ColorBrewer RdYlBu-5, matches the QGIS styles
+  const THEME_LABELS = {
+    livability_score: "Total Livability Score",
+    theme_shops_schools_healthcare: "Shops, Schools, Healthcare",
+    theme_public_transport: "Public Transport",
+    theme_green_space_water: "Green Space and Water",
+    theme_street_connectivity: "Street Connectivity",
+    theme_environment: "Environment",
+    theme_reported_crime: "Reported Crime (inverse)",
+  };
+
+  let currentField = "livability_score";
+  let breaks = null;
+  let pmLayer = null;
+
+  const map = L.map("map", { zoomSnap: 0.25 }).setView([47.2287, -122.4596], 12);
+  window.tacomaMap = map;
+  L.control.scale({ metric: false, imperial: true }).addTo(map);
+  const isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const basemapId = isDark ? "Canvas/World_Dark_Gray_Base" : "Canvas/World_Light_Gray_Base";
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/" + basemapId + "/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom: 16,
+    attribution: "Esri, HERE, Garmin, &copy; OpenStreetMap contributors, and the GIS User Community",
+  }).addTo(map);
+
+  function colorFor(v, field) {
+    if (v === null || v === undefined || Number.isNaN(v)) return "#cccccc";
+    const b = breaks[field];
+    if (v <= b[1]) return RAMP[0];
+    if (v <= b[2]) return RAMP[1];
+    if (v <= b[3]) return RAMP[2];
+    if (v <= b[4]) return RAMP[3];
+    return RAMP[4];
+  }
+
+  function buildPaintRules() {
+    return [{
+      dataLayer: "parcels",
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: (z, f) => colorFor(f.props[currentField], currentField),
+        stroke: "#5a5a5a",
+        width: 0.3,
+        perFeature: true,
+      }),
+    }];
+  }
+
+  function fmt(n) { return Math.round(n * 10) / 10; }
+
+  function updateLegend(field) {
+    const b = breaks[field];
+    const labels = [
+      fmt(b[0]) + " – " + fmt(b[1]) + " (bottom 20%)",
+      fmt(b[1]) + " – " + fmt(b[2]),
+      fmt(b[2]) + " – " + fmt(b[3]),
+      fmt(b[3]) + " – " + fmt(b[4]),
+      fmt(b[4]) + " – " + fmt(b[5]) + " (top 20%)",
+    ];
+    const el = document.getElementById("legend");
+    el.innerHTML = "<strong>" + THEME_LABELS[field] + "</strong>" +
+      RAMP.map((c, i) =>
+        '<div class="legend-swatch"><span class="chip" style="background:' + c + '"></span>' + labels[i] + "</div>"
+      ).join("");
+  }
+
+  fetch("data/quintile_breaks.json").then(r => r.json()).then(b => {
+    breaks = b;
+    pmLayer = protomapsL.leafletLayer({
+      url: "data/tacoma_livability.pmtiles",
+      maxDataZoom: 16,
+      paintRules: buildPaintRules(),
+      labelRules: [],
+    }).addTo(map);
+
+    updateLegend(currentField);
+
+    document.getElementById("theme-select").addEventListener("change", function (e) {
+      currentField = e.target.value;
+      pmLayer.paintRules = buildPaintRules();
+      pmLayer.rerenderTiles();
+      updateLegend(currentField);
+    });
+  });
+</script>
+</body>
+</html>
