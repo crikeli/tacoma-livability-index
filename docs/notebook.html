@@ -7802,9 +7802,9 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Tacoma-Livability-Index-%E2%80%94-Scoring-Methodology">Tacoma Livability Index — Scoring Methodology<a class="anchor-link" href="#Tacoma-Livability-Index-%E2%80%94-Scoring-Methodology">¶</a></h1><p>This notebook walks through, step by step, exactly how each of Tacoma's 65,229 real residential parcels
+<h1 id="Tacoma-Livability-Index:-Scoring-Methodology">Tacoma Livability Index: Scoring Methodology<a class="anchor-link" href="#Tacoma-Livability-Index:-Scoring-Methodology">¶</a></h1><p>This notebook walks through, step by step, exactly how each of Tacoma's 65,229 real residential parcels
 gets its livability score. It runs against the <strong>real data files already fetched</strong> by this project's
-pipeline (<code>pipeline/prep/fetch_*.py</code>) — it does not re-hit any live API — so it focuses on the part most
+pipeline (<code>pipeline/prep/fetch_*.py</code>). It does not re-hit any live API, so it focuses on the part most
 worth explaining in detail: how six independent real-world measurements get turned into one score per parcel.</p>
 <p>Two real methodology adaptations, stated up front:</p>
 <ul>
@@ -7857,7 +7857,7 @@ in February 2025.</li>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="Load-the-real-parcels">Load the real parcels<a class="anchor-link" href="#Load-the-real-parcels">¶</a></h2><p>Every residential parcel type the Pierce County Assessor tracks within Tacoma city limits: single-family,
-duplex/triplex/fourplex, and apartment/condo — not just multifamily.</p>
+duplex/triplex/fourplex, and apartment/condo, not just multifamily.</p>
 </div>
 </div>
 </div>
@@ -8004,9 +8004,9 @@ so distance math is in real meters, not degrees.</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Snapping-parcels-(and-every-amenity)-onto-the-network">Snapping parcels (and every amenity) onto the network<a class="anchor-link" href="#Snapping-parcels-(and-every-amenity)-onto-the-network">¶</a></h2><p>Every source location — a parcel, a supermarket, a bus stop — gets reduced to its nearest walk-network
+<h2 id="Snapping-parcels-(and-every-amenity)-onto-the-network">Snapping parcels (and every amenity) onto the network<a class="anchor-link" href="#Snapping-parcels-(and-every-amenity)-onto-the-network">¶</a></h2><p>Every source location (a parcel, a supermarket, a bus stop) gets reduced to its nearest walk-network
 node via a KD-tree on projected coordinates. Polygons (like parcel footprints) are reduced to their
-centroid first — safe here specifically because this always runs <em>after</em> projecting to an equal-area CRS;
+centroid first. That's safe here specifically because this always runs <em>after</em> projecting to an equal-area CRS;
 computing a centroid directly on unprojected lat/lon geometry distorts real-world position.</p>
 </div>
 </div>
@@ -8069,7 +8069,7 @@ computing a centroid directly on unprojected lat/lon geometry distorts real-worl
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Theme-1-%E2%80%94-Shops,-schools,-healthcare">Theme 1 — Shops, schools, healthcare<a class="anchor-link" href="#Theme-1-%E2%80%94-Shops,-schools,-healthcare">¶</a></h2><p>Real walking-network distance from each parcel to the nearest supermarket, school, preschool, pharmacy,
+<h2 id="Theme-1:-Shops,-schools,-healthcare">Theme 1: Shops, schools, healthcare<a class="anchor-link" href="#Theme-1:-Shops,-schools,-healthcare">¶</a></h2><p>Real walking-network distance from each parcel to the nearest supermarket, school, preschool, pharmacy,
 healthcare facility, library, and sports facility (all real OpenStreetMap points), averaged into one
 amenity z-score per parcel (direction-corrected: closer is better).</p>
 </div>
@@ -8194,7 +8194,7 @@ amenity z-score per parcel (direction-corrected: closer is better).</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Theme-2-%E2%80%94-Public-transport">Theme 2 — Public transport<a class="anchor-link" href="#Theme-2-%E2%80%94-Public-transport">¶</a></h2><p>Distance to the nearest bus stop (Pierce Transit) and, separately, to the nearest rail stop
+<h2 id="Theme-2:-Public-transport">Theme 2: Public transport<a class="anchor-link" href="#Theme-2:-Public-transport">¶</a></h2><p>Distance to the nearest bus stop (Pierce Transit) and, separately, to the nearest rail stop
 (Tacoma Link light rail or Sounder commuter rail, from Sound Transit's GTFS feed).</p>
 </div>
 </div>
@@ -8253,7 +8253,7 @@ amenity z-score per parcel (direction-corrected: closer is better).</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Theme-3-%E2%80%94-Green-space-and-water">Theme 3 — Green space and water<a class="anchor-link" href="#Theme-3-%E2%80%94-Green-space-and-water">¶</a></h2><p>Distance to the nearest qualifying park (≥ 1 hectare, the WHO Europe threshold used for this index)
+<h2 id="Theme-3:-Green-space-and-water">Theme 3: Green space and water<a class="anchor-link" href="#Theme-3:-Green-space-and-water">¶</a></h2><p>Distance to the nearest qualifying park (≥ 1 hectare, the WHO Europe threshold used for this index)
 and to the nearest open water.</p>
 </div>
 </div>
@@ -8311,8 +8311,8 @@ median water distance: 1258 m
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Theme-4-%E2%80%94-Street-connectivity">Theme 4 — Street connectivity<a class="anchor-link" href="#Theme-4-%E2%80%94-Street-connectivity">¶</a></h2><p>Real intersection density (junctions per km²) in the walkable network within 400m of each parcel —
-a dense grid supports short trips; cul-de-sacs don't.</p>
+<h2 id="Theme-4:-Street-connectivity">Theme 4: Street connectivity<a class="anchor-link" href="#Theme-4:-Street-connectivity">¶</a></h2><p>Real intersection density (junctions per km²) in the walkable network within 400m of each parcel.
+A dense grid supports short trips; cul-de-sacs don't.</p>
 </div>
 </div>
 </div>
@@ -8390,7 +8390,7 @@ median connectivity: 210.9 junctions/km2
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Theme-5-%E2%80%94-Environment-(archived-EJSCREEN)">Theme 5 — Environment (archived EJSCREEN)<a class="anchor-link" href="#Theme-5-%E2%80%94-Environment-(archived-EJSCREEN)">¶</a></h2><p>Each parcel is spatially joined to its real census tract, then scored on that tract's real EPA EJSCREEN
+<h2 id="Theme-5:-Environment-(archived-EJSCREEN)">Theme 5: Environment (archived EJSCREEN)<a class="anchor-link" href="#Theme-5:-Environment-(archived-EJSCREEN)">¶</a></h2><p>Each parcel is spatially joined to its real census tract, then scored on that tract's real EPA EJSCREEN
 2024 pollution-burden percentile (PM2.5, ozone, diesel PM, NO₂, traffic proximity, averaged).</p>
 </div>
 </div>
@@ -8479,7 +8479,7 @@ median connectivity: 210.9 junctions/km2
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Theme-6-%E2%80%94-Reported-crime-density">Theme 6 — Reported crime density<a class="anchor-link" href="#Theme-6-%E2%80%94-Reported-crime-density">¶</a></h2><p>Real TPD Person/Property crime incidents (last 3 years) within an 800m radius of each parcel, converted
+<h2 id="Theme-6:-Reported-crime-density">Theme 6: Reported crime density<a class="anchor-link" href="#Theme-6:-Reported-crime-density">¶</a></h2><p>Real TPD Person/Property crime incidents (last 3 years) within an 800m radius of each parcel, converted
 to a density (incidents per km²) so parcel size and radius area don't confound the comparison.</p>
 </div>
 </div>
@@ -8544,8 +8544,8 @@ to a density (incidents per km²) so parcel size and radius area don't confound 
 the mean of the six themes with their <em>minimum</em> (70/30), so a parcel can't fully offset being bad on one
 theme by being excellent on another.</p>
 <p>A real bug caught during development: the minimum of several mean-zero z-scored variables is itself
-biased below zero (an order-statistics property — <code>min(a, b, c, ...)</code> of mean-zero variables has mean
-&lt; 0). Blending in <code>theme_min</code> therefore shifts the <em>combined</em> z-score's mean below zero — assuming it
+biased below zero (an order-statistics property: <code>min(a, b, c, ...)</code> of mean-zero variables has mean
+&lt; 0). Blending in <code>theme_min</code> therefore shifts the <em>combined</em> z-score's mean below zero. Assuming it
 was still centered at zero and directly rescaling produced a real citywide mean of 90.3, not the 100 the
 methodology calls for. The fix: explicitly re-center on the combined score's <em>actual</em> mean before
 rescaling to a mean of 100 and standard deviation of 10.</p>
