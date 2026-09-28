@@ -49,6 +49,8 @@
 
   h2 { font-size: 1.15rem; margin: 32px 0 10px; }
   h2:first-child { margin-top: 0; }
+  h3 { font-size: 1rem; margin: 22px 0 6px; }
+  .stat-line { font-size: 0.85rem; color: var(--muted); margin: 4px 0 10px; font-variant-numeric: tabular-nums; }
   p { line-height: 1.6; }
   table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 0.92rem; }
   th, td { border-bottom: 1px solid var(--border); padding: 6px 10px; text-align: left; }
@@ -137,6 +139,37 @@
         <img src="assets/figures/small_multiples.png" alt="Six-panel small multiples map, one per theme">
         <figcaption>Six panels of the same 65,229 parcels, one per theme, all on the same color scale. Environment shows a clear geographic gradient &mdash; better along the Puget Sound-facing north and west, worse moving inland and south toward and past the Tideflats. Street connectivity, on the other hand, is basically flat citywide, which lines up with that weak correlation above.</figcaption>
       </figure>
+      <p>Let's actually go through each one properly &mdash; how it was built, and what the real numbers behind it show.</p>
+
+      <h3>1. Shops, schools, healthcare</h3>
+      <p><b>How it was built:</b> seven real OpenStreetMap point layers &mdash; supermarket, school, preschool, pharmacy, healthcare, library, and sports facility. Every parcel gets its real walking-network distance (not straight-line) to the nearest point in each category, computed once per category via multi-source Dijkstra across the full Tacoma OSM walk graph (50,174 nodes, 146,642 edges), then the seven distances are each turned into a z-score and averaged.</p>
+      <p class="stat-line">Real locations found &amp; median walking distance &mdash; supermarket: 33 (1,387&nbsp;m) &middot; school: 116 (707&nbsp;m) &middot; preschool: 11 (2,539&nbsp;m) &middot; pharmacy: 22 (1,572&nbsp;m) &middot; healthcare: 114 (1,462&nbsp;m) &middot; library: 14 (1,724&nbsp;m) &middot; sports: 60 (1,522&nbsp;m)</p>
+      <p><b>What it shows:</b> that preschool number jumped out at me &mdash; only 11 citywide is almost certainly an OSM coverage gap, not a real scarcity of childcare (see the limitations below). Averaging seven sub-metrics together also does something statistically interesting: it's the most compressed theme of all six (standard deviation of its z-score is 0.625, versus 1.0 for the single-metric themes), because averaging cancels out some of each individual metric's noise. Even compressed, it's still the second-strongest driver of the total score (r&nbsp;=&nbsp;0.38) &mdash; access to everyday errands genuinely separates neighborhoods here.</p>
+
+      <h3>2. Public transport</h3>
+      <p><b>How it was built:</b> real walking distance to the nearest bus stop (every Pierce Transit stop, from their live GTFS feed) and, separately, to the nearest rail stop &mdash; filtered from Sound Transit's full regional GTFS feed down to just the two routes that actually serve Tacoma, Tacoma Link light rail and Sounder commuter rail. The two distances are z-scored and averaged.</p>
+      <p class="stat-line">1,974 real bus stops (median 313&nbsp;m) &middot; 38 real rail stops (median 3,547&nbsp;m)</p>
+      <p><b>What it shows:</b> that's more than a 10x gap between how close the median parcel is to a bus stop versus a rail stop &mdash; Tacoma's bus network genuinely reaches most neighborhoods, while light rail and commuter rail only serve a narrow corridor. Because decent bus access is so common citywide, this theme has the weakest correlation with the total score of any access theme (r&nbsp;=&nbsp;0.19) &mdash; it doesn't vary enough, on its own, to be what separates a strong block from a weak one.</p>
+
+      <h3>3. Green space and water</h3>
+      <p><b>How it was built:</b> real walking distance to the nearest qualifying park (Metro Parks Tacoma's inventory, filtered to parks &ge; 2.47 acres &mdash; 1 hectare, the WHO Europe minimum-usable-park-size threshold) and, separately, to the nearest open water (OSM). Both distances are z-scored and averaged.</p>
+      <p class="stat-line">64 real qualifying parks (median 999&nbsp;m) &middot; open water (median 1,258&nbsp;m)</p>
+      <p><b>What it shows:</b> most parcels sit under a kilometer from a real usable park, but water access is a bit more uneven &mdash; not surprising in a city that's only partly on the waterfront. This theme lands mid-pack for both correlation (r&nbsp;=&nbsp;0.31) and spread (std&nbsp;=&nbsp;0.699), a real, meaningful contributor without being decisive on its own.</p>
+
+      <h3>4. Street connectivity</h3>
+      <p><b>How it was built:</b> a real intersection-density calculation, not a distance. Every walk-network node with three or more connecting streets counts as a junction; for each parcel, this counts how many real junctions fall within a 400m radius of its centroid and converts that to junctions per km&sup2;.</p>
+      <p class="stat-line">40,975 real qualifying junctions citywide &middot; median 210.9/km&sup2; (range 2.0&ndash;1,348.8, middle 50% falls between 133.3 and 380.0)</p>
+      <p><b>What it shows:</b> there's real, wide variation here &mdash; a 674x range between the least- and most-connected parcels &mdash; but it barely correlates with the total livability score at all (r&nbsp;=&nbsp;0.065). My read: Tacoma's historic street grid means most residential areas clear a basic connectivity bar, so this theme mostly separates a few real cul-de-sac outliers from everywhere else, rather than tracking overall neighborhood quality the way crime or access do.</p>
+
+      <h3>5. Environment</h3>
+      <p><b>How it was built:</b> each parcel is spatially joined to its real US Census tract, which is joined to that tract's real EPA EJSCREEN 2024 pollution-burden percentile &mdash; an average of five real sub-indicators (fine particulates, ozone, diesel particulate matter, NO<sub>2</sub>, and traffic proximity).</p>
+      <p class="stat-line">Real tract-level pollution-burden percentile: median 58.4, ranging from 43.0 to 67.8 citywide (middle 50% between 52.6 and 61.0)</p>
+      <p><b>What it shows:</b> a real, fairly compact range at the parcel level (since every home in a tract shares one value), but it's still a genuine driver of the total score (r&nbsp;=&nbsp;0.33) &mdash; and it lines up with a clear real geographic pattern: cleaner air along the Puget Sound-facing north and west, worse moving inland and toward the industrial Tideflats.</p>
+
+      <h3>6. Reported crime</h3>
+      <p><b>How it was built:</b> every real Person/Property crime incident the Tacoma Police Department reported over the last three years (54,899 of them), converted to a density &mdash; how many fall within an 800m radius of each parcel, per km&sup2;.</p>
+      <p class="stat-line">Real crime density: median 340.7 incidents/km&sup2;, ranging from 0.5 to 3,602.9 (middle 50% between 202.4 and 567.0)</p>
+      <p><b>What it shows:</b> a genuinely huge real range &mdash; over 7,000x between the safest and least-safe parcels by this measure &mdash; and it's the single strongest driver of the total score of all six themes (r&nbsp;=&nbsp;0.45). Whatever else a neighborhood has going for it, this is the theme that moves the needle most.</p>
 
       <h2>Okay, let's rank the neighborhoods</h2>
       <p>Tacoma's eight official Neighborhood Council Districts, ranked by mean score across every real residential parcel each one contains.</p>
